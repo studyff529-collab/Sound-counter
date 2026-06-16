@@ -5,316 +5,445 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ram Jaap Counter</title>
     <style>
-        /* पूरा बैकग्राउंड काला */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background-color: #000000;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
             overflow: hidden;
-            user-select: none; /* टेक्स्ट सिलेक्ट न हो */
+            user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ऊपर का हेडर */
+        /* Top Header */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
+            padding: 20px 15px;
             border-bottom: 1px solid #222;
         }
 
-        .title {
-            font-size: 1.2rem;
+        .ram-text {
+            font-size: 1.3rem;
             font-weight: bold;
-            color: #ff9933; /* भगवा रंग */
-            letter-spacing: 1px;
+            color: #ff9933;
+            letter-spacing: 2px;
+            text-align: center;
+            flex: 1;
         }
 
-        /* रीसेट बटन */
         .reset-btn {
             background-color: #1a1a1a;
-            color: #ff9933;
-            border: 1px solid #ff9933;
-            padding: 8px 16px;
-            border-radius: 8px;
+            color: #ff6666;
+            border: 2px solid #ff6666;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1rem;            font-weight: bold;
             cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: bold;
+            margin-left: 10px;
             transition: all 0.2s;
         }
+
         .reset-btn:active {
-            background-color: #ff9933;
+            background-color: #ff6666;
             color: #000;
             transform: scale(0.95);
         }
 
-        /* बीच का काउंटर सेक्शन */
-        .counter-container {
+        /* Counter Display */
+        .counter-display {
             flex: 1;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
-
-        #counter {
-            font-size: 10rem;
+            font-size: 12rem;
             font-weight: bold;
             color: #ffffff;
-            margin-bottom: 10px;
-            transition: transform 0.15s ease, color 0.15s ease;
-            line-height: 1;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
         }
 
-        #status {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 30px;
-            height: 24px; /* जगह फिक्स रखने के लिए */
+        /* Buttons Container */
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            padding: 20px;
+            position: relative;
         }
 
-        /* मुख्य बटन */
-        #micBtn {
-            padding: 16px 40px;
+        /* Audio Visualizer (above Start button) */
+        .visualizer-container {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-140%);
+            width: 120px;
+            height: 40px;
+            display: none;
+        }
+
+        .visualizer-container.active {
+            display: block;
+        }
+
+        #visualizer {            width: 100%;
+            height: 100%;
+        }
+
+        /* Start and Stop Buttons */
+        .control-btn {
+            padding: 15px 40px;
             font-size: 1.2rem;
-            background-color: #ff9933;
-            color: #000;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
             font-weight: bold;
-            box-shadow: 0 4px 20px rgba(255, 153, 51, 0.4);
-            transition: all 0.2s;
-            width: 80%;
-            max-width: 300px;
-        }
-        #micBtn:active {
-            transform: scale(0.96);
+            border: 3px solid;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        #micBtn.stop-mode {
-            background-color: #cc0000;
+        .start-btn {
+            background-color: #1a1a1a;
+            color: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .start-btn.active {
+            background-color: #4CAF50;
+            color: #000;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
+            transform: scale(1.05);
+        }
+
+        .stop-btn {
+            background-color: #1a1a1a;
+            color: #f44336;
+            border-color: #f44336;
+        }
+
+        .stop-btn.active {
+            background-color: #f44336;
             color: #fff;
-            box-shadow: 0 4px 20px rgba(204, 0, 0, 0.4);
+            box-shadow: 0 0 30px rgba(244, 67, 54, 0.6);
+            transform: scale(1.05);
         }
 
-        /* लाइव कैप्शन (Auto-caption) */
-        #caption {
-            margin-top: 25px;
-            font-size: 1.1rem;
-            color: #aaaaaa;
-            font-style: italic;
-            min-height: 30px;
-            opacity: 0; /* शुरू में छिपा रहेगा */
-            transition: opacity 0.3s ease-in-out;
-            background-color: #111;
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Caption Area */
+        .caption-container {
+            padding: 20px;            text-align: center;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .caption-line {
+            font-size: 1.3rem;
+            color: #888;
+            border-bottom: 2px solid #333;
             padding: 10px 20px;
-            border-radius: 10px;
-            border: 1px solid #333;
-            max-width: 90%;
-            word-wrap: break-word;
+            min-width: 200px;
+            text-align: center;
+            transition: opacity 0.3s;
         }
 
-        #caption.visible {
+        .caption-line.show {
+            color: #fff;
+            border-bottom-color: #ff9933;
             opacity: 1;
+        }
+
+        .caption-line.hide {
+            opacity: 0;
         }
     </style>
 </head>
 <body>
-
-    <!-- ऊपर का हिस्सा -->
+    <!-- Header -->
     <div class="header">
-        <div class="title">राम राम राम राम राम</div>
-        <button id="resetBtn" class="reset-btn">Reset</button>
+        <div class="ram-text">राम राम राम राम राम</div>
+        <button class="reset-btn" id="resetBtn">Reset</button>
     </div>
 
-    <!-- बीच का हिस्सा -->
-    <div class="counter-container">
-        <div id="counter">0</div>
-        <div id="status">माइक बंद है</div>
-        
-        <button id="micBtn">🎤 सुनना शुरू करें</button>
-        
-        <!-- यहाँ बोला गया शब्द 2 सेकंड के लिए दिखेगा -->
-        <div id="caption"></div>
+    <!-- Counter -->
+    <div class="counter-display" id="counter">0</div>
+
+    <!-- Buttons with Visualizer -->
+    <div class="buttons-container">
+        <div class="visualizer-container" id="visualizerContainer">
+            <canvas id="visualizer"></canvas>
+        </div>
+        <button class="control-btn start-btn" id="startBtn">Start</button>
+        <button class="control-btn stop-btn" id="stopBtn">Stop</button>
     </div>
+
+    <!-- Caption -->
+    <div class="caption-container">
+        <div class="caption-line" id="caption">caption text</div>    </div>
+
     <script>
-        // --- वेरिएबल्स ---
+        // Variables
         let count = 0;
         let isListening = false;
+        let recognition = null;
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let animationId = null;
         let captionTimer = null;
+        let partialRam = ''; // To track "रा" or "म" separately
 
-        const counterElement = document.getElementById('counter');
+        // DOM Elements
+        const counterEl = document.getElementById('counter');
         const resetBtn = document.getElementById('resetBtn');
-        const micBtn = document.getElementById('micBtn');
-        const statusElement = document.getElementById('status');
-        const captionElement = document.getElementById('caption');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const captionEl = document.getElementById('caption');
+        const visualizerContainer = document.getElementById('visualizerContainer');
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
 
-        // --- 1. रीसेट बटन: 3 बार लगातार टैप (800ms के अंदर) ---
-        let tapCount = 0;
-        let lastTapTime = 0;
-        const tapDelay = 800;
+        // Set canvas size
+        canvas.width = 120;
+        canvas.height = 40;
 
-        resetBtn.addEventListener('click', (e) => {
-            e.preventDefault(); 
-            const currentTime = new Date().getTime();
+        // Reset Button with Vibration
+        resetBtn.addEventListener('click', () => {
+            // Vibrate phone (50ms)
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
             
-            if (currentTime - lastTapTime < tapDelay) {
-                tapCount++;
-            } else {
-                tapCount = 1;
-            }
-            lastTapTime = currentTime;
-
-            if (tapCount === 3) {
-                count = 0;
-                counterElement.innerText = count;
-                tapCount = 0;
-                
-                // विजुअल फीडबैक
-                resetBtn.innerText = "✓ रीसेट";
-                setTimeout(() => { resetBtn.innerText = "Reset"; }, 600);
-            }
+            // Reset counter
+            count = 0;
+            counterEl.textContent = '0';
+            
+            // Visual feedback
+            counterEl.style.color = '#ff6666';
+            setTimeout(() => {
+                counterEl.style.color = '#ffffff';
+            }, 200);
         });
 
-        // --- 2. वॉइस रिकग्निशन सेटअप ---
+        // Speech Recognition Setup
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition;
+        
+        if (SpeechRecognition) {            recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.continuous = true;
+            recognition.interimResults = true;
 
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'hi-IN'; // हिंदी
-            recognition.continuous = true; // लगातार सुनता रहे
-            recognition.interimResults = true; // तुरंत टेक्स्ट दिखाने के लिए (स्मूथ फीलिंग)
-            // जब माइक चालू हो
-            recognition.onstart = () => {
-                isListening = true;
-                micBtn.innerText = "⏹️ रोकें (Stop)";
-                micBtn.classList.add('stop-mode');
-                statusElement.innerText = "सुन रहा हूँ... ('राम' बोलें)";
-                statusElement.style.color = "#00ff00";
-            };
-
-            // जब माइक बंद हो (या अपने आप रुक जाए)
-            recognition.onend = () => {
-                // अगर यूजर ने मैन्युअली स्टॉप नहीं किया, तो बटन रीसेट कर दें
-                if (isListening) {
-                    // कभी-कभी ब्राउज़र साइलेंस की वजह से अपने आप बंद कर देता है
-                    // हम उसे वापस चालू कर सकते हैं, या यूजर को मैन्युअली चालू करने दे सकते हैं।
-                    // यहाँ हम मैन्युअल कंट्रोल को प्राथमिकता दे रहे हैं।
-                    isListening = false;
-                    micBtn.innerText = "🎤 सुनना शुरू करें";
-                    micBtn.classList.remove('stop-mode');
-                    statusElement.innerText = "माइक बंद हो गया";
-                    statusElement.style.color = "#666";
-                }
-            };
-
-            // जब आवाज़ पहचानी जाए
             recognition.onresult = (event) => {
                 let finalTranscript = '';
                 let interimTranscript = '';
 
-                // सभी रिजल्ट्स को चेक करें
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript.toLowerCase().trim();
+                    
                     if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
+                        finalTranscript += transcript;
                     } else {
-                        interimTranscript += event.results[i][0].transcript;
+                        interimTranscript += transcript;
                     }
                 }
 
-                // स्क्रीन पर दिखाएं कि फोन क्या सुन रहा है (Final या Interim)
-                const textToShow = finalTranscript || interimTranscript;
-                if (textToShow.trim() !== '') {
-                    showCaption(textToShow.trim());
+                const displayText = finalTranscript || interimTranscript;
+                
+                // Show caption
+                if (displayText) {
+                    showCaption(displayText);
                 }
 
-                // --- काउंटिंग लॉजिक ---
-                // हम सिर्फ 'finalTranscript' पर काउंट करेंगे ताकि एक ही शब्द बार-बार न गिना जाए
+                // Count "राम" or "ram" - including split words
                 if (finalTranscript) {
-                    const cleanText = finalTranscript.toLowerCase().trim();
-                    
-                    // चेक करें कि टेक्स्ट में 'राम' या 'ram' आया है या नहीं                    // यह regex 'राम' या 'ram' की सभी occurrences (आवृत्तियों) को गिनेगा
-                    const ramMatches = cleanText.match(/राम|ram/g);
-                    
-                    if (ramMatches && ramMatches.length > 0) {
-                        count += ramMatches.length; // जितनी बार 'राम' आया, उतना जोड़ें
-                        counterElement.innerText = count;
-                        
-                        // काउंटर बढ़ने पर हल्का सा एनिमेशन (पल्स)
-                        counterElement.style.transform = "scale(1.15)";
-                        counterElement.style.color = "#ff9933";
-                        setTimeout(() => {
-                            counterElement.style.transform = "scale(1)";
-                            counterElement.style.color = "#ffffff";
-                        }, 150);
-                    }
+                    countRamWords(finalTranscript);
                 }
             };
 
             recognition.onerror = (event) => {
-                console.error("Speech Error:", event.error);
-                if (event.error === 'not-allowed') {
-                    statusElement.innerText = "माइक की अनुमति नहीं दी गई!";
-                    statusElement.style.color = "red";
-                }
+                console.error('Speech recognition error:', event.error);
             };
-
-        } else {
-            statusElement.innerText = "आपका ब्राउज़र वॉइस सपोर्ट नहीं करता। Chrome का उपयोग करें।";
-            statusElement.style.color = "red";
-            micBtn.style.display = 'none';
         }
 
-        // --- 3. माइक चालू/बंद करने का बटन ---
-        micBtn.addEventListener('click', () => {
-            if (!recognition) return;
+        // Count Ram words (including split "रा" and "म")
+        function countRamWords(text) {
+            const lowerText = text.toLowerCase();
+            
+            // Check for complete "राम" or "ram"
+            const completeMatches = lowerText.match(/राम|ram/g);
+            if (completeMatches) {
+                count += completeMatches.length;
+            }
+            
+            // Check for split "रा" and "म"
+            // If text contains "रा" or "म" separately
+            const raMatches = lowerText.match(/रा\b|\bra/g);            const mMatches = lowerText.match(/\bम\b|[^ा]म\b/g);
+            
+            // Track partial matches across multiple utterances
+            if (raMatches && raMatches.length > 0) {
+                partialRam = 'ra';
+            }
+            if (mMatches && mMatches.length > 0 && partialRam === 'ra') {
+                count += mMatches.length;
+                partialRam = '';
+            } else if (mMatches && mMatches.length > 0) {
+                partialRam = 'm';
+            }
+            
+            // Update counter
+            counterEl.textContent = count;
+            
+            // Pulse animation
+            counterEl.style.transform = 'scale(1.1)';
+            counterEl.style.color = '#ff9933';
+            setTimeout(() => {
+                counterEl.style.transform = 'scale(1)';
+                counterEl.style.color = '#ffffff';
+            }, 150);
+        }
 
-            if (!isListening) {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    console.log("पहले से चालू है");
-                }
-            } else {
-                recognition.stop();
-                isListening = false; // मैन्युअली स्टॉप किया, तो onend में यह true नहीं रहेगा
-                micBtn.innerText = "🎤 सुनना शुरू करें";
-                micBtn.classList.remove('stop-mode');
-                statusElement.innerText = "माइक बंद है";
-                statusElement.style.color = "#666";
-                hideCaption();            }
-        });
-
-        // --- 4. कैप्शन दिखाने और 2 सेकंड बाद छिपाने का फंक्शन ---
+        // Show Caption for 2 seconds
         function showCaption(text) {
-            captionElement.innerText = "सुना: " + text;
-            captionElement.classList.add('visible');
-
-            // पुराना टाइमर क्लियर करें ताकि लगातार बोलने पर यह झपके नहीं
+            captionEl.textContent = text;
+            captionEl.classList.remove('hide');
+            captionEl.classList.add('show');
+            
+            // Clear existing timer
             if (captionTimer) {
                 clearTimeout(captionTimer);
             }
-
-            // 2 सेकंड (2000 ms) बाद छिपा दें
+            
+            // Hide after 2 seconds
             captionTimer = setTimeout(() => {
-                hideCaption();
+                captionEl.classList.remove('show');
+                captionEl.classList.add('hide');
             }, 2000);
         }
 
-        function hideCaption() {
-            captionElement.classList.remove('visible');
+        // Audio Visualizer Setup
+        async function setupAudioVisualizer() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 64;
+                                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+                
+                visualize();
+            } catch (err) {
+                console.error('Error setting up audio visualizer:', err);
+            }
         }
 
+        // Draw Visualizer
+        function visualize() {
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function draw() {
+                if (!isListening) return;
+                
+                animationId = requestAnimationFrame(draw);
+                
+                analyser.getByteFrequencyData(dataArray);
+                
+                canvasCtx.fillStyle = '#000';
+                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const barWidth = (canvas.width / bufferLength) * 2.5;
+                let barHeight;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = (dataArray[i] / 255) * canvas.height;
+                    
+                    // Gradient color based on height
+                    const gradient = canvasCtx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+                    gradient.addColorStop(0, '#4CAF50');
+                    gradient.addColorStop(1, '#8BC34A');
+                    
+                    canvasCtx.fillStyle = gradient;
+                    canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                    
+                    x += barWidth + 1;
+                }
+            }
+            
+            draw();
+        }
+
+        // Start Button
+        startBtn.addEventListener('click', async () => {
+            if (isListening) return;            
+            isListening = true;
+            
+            // Update button states
+            startBtn.classList.add('active');
+            stopBtn.classList.remove('active');
+            visualizerContainer.classList.add('active');
+            
+            // Start speech recognition
+            if (recognition) {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.log('Recognition already started');
+                }
+            }
+            
+            // Start audio visualizer
+            await setupAudioVisualizer();
+        });
+
+        // Stop Button
+        stopBtn.addEventListener('click', () => {
+            if (!isListening) return;
+            
+            isListening = false;
+            
+            // Update button states
+            stopBtn.classList.add('active');
+            startBtn.classList.remove('active');
+            visualizerContainer.classList.remove('active');
+            
+            // Stop speech recognition
+            if (recognition) {
+                recognition.stop();
+            }
+            
+            // Stop audio visualizer
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            
+            // Clear canvas
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+        // Initialize caption as hidden
+        setTimeout(() => {
+            captionEl.classList.add('hide');
+        }, 100);
     </script>
 </body>
+</html></body>
 </html>
