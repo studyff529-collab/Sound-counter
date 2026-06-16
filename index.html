@@ -5,54 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ram Jaap Counter</title>
     <style>
-        /* पूरा बैकग्राउंड काला और बेसिक स्टाइल */
+        /* पूरा बैकग्राउंड काला */
         body {
-            background-color: black;
-            color: white;
+            background-color: #000000;
+            color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden; /* स्क्रोलिंग रोकने के लिए */
+            overflow: hidden;
+            user-select: none; /* टेक्स्ट सिलेक्ट न हो */
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* ऊपर का हेडर सेक्शन */
+        /* ऊपर का हेडर */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid #222;
         }
 
         .title {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #ff9933; /* भगवा रंग */
             letter-spacing: 1px;
-            text-align: left;
-            flex: 1;
         }
 
-        /* रीसेट बटन का डिज़ाइन */
+        /* रीसेट बटन */
         .reset-btn {
-            background-color: #222;
+            background-color: #1a1a1a;
             color: #ff9933;
             border: 1px solid #ff9933;
             padding: 8px 16px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: bold;
             transition: all 0.2s;
-            user-select: none; /* टेक्स्ट सिलेक्ट न हो */            -webkit-tap-highlight-color: transparent;
         }
-
         .reset-btn:active {
             background-color: #ff9933;
-            color: black;
+            color: #000;
             transform: scale(0.95);
         }
 
@@ -64,40 +62,69 @@
             justify-content: center;
             align-items: center;
             text-align: center;
+            padding: 20px;
         }
 
-        /* बड़ा सा काउंटर नंबर */
         #counter {
-            font-size: 12rem;
+            font-size: 10rem;
             font-weight: bold;
-            color: white;
+            color: #ffffff;
             margin-bottom: 10px;
-            transition: transform 0.1s ease;
+            transition: transform 0.15s ease, color 0.15s ease;
             line-height: 1;
         }
 
         #status {
-            color: #888;
-            font-size: 1.1rem;
+            color: #666;
+            font-size: 1rem;
             margin-bottom: 30px;
-            padding: 0 20px;
+            height: 24px; /* जगह फिक्स रखने के लिए */
         }
 
-        /* माइक चालू करने का बटन */
-        #startBtn {
-            padding: 15px 40px;
+        /* मुख्य बटन */
+        #micBtn {
+            padding: 16px 40px;
             font-size: 1.2rem;
             background-color: #ff9933;
-            color: black;
+            color: #000;
             border: none;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(255, 153, 51, 0.3);
-            transition: transform 0.1s;
+            box-shadow: 0 4px 20px rgba(255, 153, 51, 0.4);
+            transition: all 0.2s;
+            width: 80%;
+            max-width: 300px;
         }
-        #startBtn:active {
-            transform: scale(0.95);
+        #micBtn:active {
+            transform: scale(0.96);
+        }
+
+        #micBtn.stop-mode {
+            background-color: #cc0000;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(204, 0, 0, 0.4);
+        }
+
+        /* लाइव कैप्शन (Auto-caption) */
+        #caption {
+            margin-top: 25px;
+            font-size: 1.1rem;
+            color: #aaaaaa;
+            font-style: italic;
+            min-height: 30px;
+            opacity: 0; /* शुरू में छिपा रहेगा */
+            transition: opacity 0.3s ease-in-out;
+            background-color: #111;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        #caption.visible {
+            opacity: 1;
         }
     </style>
 </head>
@@ -109,136 +136,185 @@
         <button id="resetBtn" class="reset-btn">Reset</button>
     </div>
 
-    <!-- बीच का काउंटर हिस्सा -->
+    <!-- बीच का हिस्सा -->
     <div class="counter-container">
         <div id="counter">0</div>
-        <div id="status">माइक चालू करने के लिए नीचे बटन दबाएं</div>
-        <button id="startBtn">🎤 सुनना शुरू करें</button>
+        <div id="status">माइक बंद है</div>
+        
+        <button id="micBtn">🎤 सुनना शुरू करें</button>
+        
+        <!-- यहाँ बोला गया शब्द 2 सेकंड के लिए दिखेगा -->
+        <div id="caption"></div>
     </div>
-
-    <!-- JavaScript लॉजिक -->
     <script>
+        // --- वेरिएबल्स ---
         let count = 0;
+        let isListening = false;
+        let captionTimer = null;
+
         const counterElement = document.getElementById('counter');
         const resetBtn = document.getElementById('resetBtn');
-        const startBtn = document.getElementById('startBtn');
+        const micBtn = document.getElementById('micBtn');
         const statusElement = document.getElementById('status');
+        const captionElement = document.getElementById('caption');
 
-        // --- 1. रीसेट बटन: 3 बार लगातार टैप करने का लॉजिक ---
+        // --- 1. रीसेट बटन: 3 बार लगातार टैप (800ms के अंदर) ---
         let tapCount = 0;
         let lastTapTime = 0;
-        const tapDelay = 800; // 0.8 सेकंड के अंदर 3 बार टैप करना होगा
+        const tapDelay = 800;
 
         resetBtn.addEventListener('click', (e) => {
-            // डबल टैप ज़ूम को रोकने के लिए
             e.preventDefault(); 
-            
             const currentTime = new Date().getTime();
             
             if (currentTime - lastTapTime < tapDelay) {
                 tapCount++;
             } else {
-                tapCount = 1; // नई शुरुआत
+                tapCount = 1;
             }
             lastTapTime = currentTime;
 
             if (tapCount === 3) {
                 count = 0;
                 counterElement.innerText = count;
-                tapCount = 0; // टैप काउंट रीसेट करें                
-                // यूजर को विजुअल फीडबैक दें
-                resetBtn.innerText = "✓ रीसेट";
-                resetBtn.style.backgroundColor = "#ff9933";
-                resetBtn.style.color = "black";
+                tapCount = 0;
                 
-                setTimeout(() => {
-                    resetBtn.innerText = "Reset";
-                    resetBtn.style.backgroundColor = "#222";
-                    resetBtn.style.color = "#ff9933";
-                }, 600);
+                // विजुअल फीडबैक
+                resetBtn.innerText = "✓ रीसेट";
+                setTimeout(() => { resetBtn.innerText = "Reset"; }, 600);
             }
         });
 
-        // --- 2. वॉइस रिकग्निशन (आवाज़ सुनने) का लॉजिक ---
+        // --- 2. वॉइस रिकग्निशन सेटअप ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            recognition.lang = 'hi-IN'; // हिंदी भाषा
+            recognition.lang = 'hi-IN'; // हिंदी
             recognition.continuous = true; // लगातार सुनता रहे
-            recognition.interimResults = false; // केवल अंतिम परिणाम दिखाए
-
+            recognition.interimResults = true; // तुरंत टेक्स्ट दिखाने के लिए (स्मूथ फीलिंग)
+            // जब माइक चालू हो
             recognition.onstart = () => {
+                isListening = true;
+                micBtn.innerText = "⏹️ रोकें (Stop)";
+                micBtn.classList.add('stop-mode');
                 statusElement.innerText = "सुन रहा हूँ... ('राम' बोलें)";
-                statusElement.style.color = "#00ff00"; // हरा रंग
-                startBtn.style.display = 'none';
+                statusElement.style.color = "#00ff00";
             };
 
+            // जब माइक बंद हो (या अपने आप रुक जाए)
             recognition.onend = () => {
-                statusElement.innerText = "सुनना बंद हो गया। फिर से शुरू करें।";
-                statusElement.style.color = "#888";
-                startBtn.style.display = 'block';
+                // अगर यूजर ने मैन्युअली स्टॉप नहीं किया, तो बटन रीसेट कर दें
+                if (isListening) {
+                    // कभी-कभी ब्राउज़र साइलेंस की वजह से अपने आप बंद कर देता है
+                    // हम उसे वापस चालू कर सकते हैं, या यूजर को मैन्युअली चालू करने दे सकते हैं।
+                    // यहाँ हम मैन्युअल कंट्रोल को प्राथमिकता दे रहे हैं।
+                    isListening = false;
+                    micBtn.innerText = "🎤 सुनना शुरू करें";
+                    micBtn.classList.remove('stop-mode');
+                    statusElement.innerText = "माइक बंद हो गया";
+                    statusElement.style.color = "#666";
+                }
             };
 
+            // जब आवाज़ पहचानी जाए
             recognition.onresult = (event) => {
-                const lastResultIndex = event.results.length - 1;
-                const transcript = event.results[lastResultIndex][0].transcript.trim().toLowerCase();
-                
-                // वाक्य को शब्दों में तोड़ें
-                const words = transcript.split(/\s+/);
-                let foundRam = false;
+                let finalTranscript = '';
+                let interimTranscript = '';
 
-                for (let word of words) {
-                    // विराम चिह्न (जैसे कॉमा, फुल स्टॉप) हटाएं
-                    const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
-                    
-                    // चेक करें कि शब्द exact 'राम' या 'ram' है
-                    if (cleanWord === 'राम' || cleanWord === 'ram') {                        foundRam = true;
-                        break;
+                // सभी रिजल्ट्स को चेक करें
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
                     }
                 }
 
-                // अगर सिर्फ 'राम' शब्द मिला, तो ही काउंट बढ़ेगा
-                if (foundRam) {
-                    count++;
-                    counterElement.innerText = count;
+                // स्क्रीन पर दिखाएं कि फोन क्या सुन रहा है (Final या Interim)
+                const textToShow = finalTranscript || interimTranscript;
+                if (textToShow.trim() !== '') {
+                    showCaption(textToShow.trim());
+                }
+
+                // --- काउंटिंग लॉजिक ---
+                // हम सिर्फ 'finalTranscript' पर काउंट करेंगे ताकि एक ही शब्द बार-बार न गिना जाए
+                if (finalTranscript) {
+                    const cleanText = finalTranscript.toLowerCase().trim();
                     
-                    // काउंटर बढ़ने पर थोड़ा सा एनिमेशन (पल्स इफेक्ट)
-                    counterElement.style.transform = "scale(1.15)";
-                    counterElement.style.color = "#ff9933";
-                    setTimeout(() => {
-                        counterElement.style.transform = "scale(1)";
-                        counterElement.style.color = "white";
-                    }, 150);
+                    // चेक करें कि टेक्स्ट में 'राम' या 'ram' आया है या नहीं                    // यह regex 'राम' या 'ram' की सभी occurrences (आवृत्तियों) को गिनेगा
+                    const ramMatches = cleanText.match(/राम|ram/g);
+                    
+                    if (ramMatches && ramMatches.length > 0) {
+                        count += ramMatches.length; // जितनी बार 'राम' आया, उतना जोड़ें
+                        counterElement.innerText = count;
+                        
+                        // काउंटर बढ़ने पर हल्का सा एनिमेशन (पल्स)
+                        counterElement.style.transform = "scale(1.15)";
+                        counterElement.style.color = "#ff9933";
+                        setTimeout(() => {
+                            counterElement.style.transform = "scale(1)";
+                            counterElement.style.color = "#ffffff";
+                        }, 150);
+                    }
                 }
             };
 
             recognition.onerror = (event) => {
-                console.error("Speech recognition error", event.error);
-                if(event.error === 'not-allowed') {
-                    statusElement.innerText = "माइक की अनुमति नहीं दी गई।";
-                } else {
-                    statusElement.innerText = "Error: " + event.error;
+                console.error("Speech Error:", event.error);
+                if (event.error === 'not-allowed') {
+                    statusElement.innerText = "माइक की अनुमति नहीं दी गई!";
+                    statusElement.style.color = "red";
                 }
-                statusElement.style.color = "red";
             };
+
         } else {
-            statusElement.innerText = "आपका ब्राउज़र वॉइस रिकग्निशन सपोर्ट नहीं करता। कृपया Chrome ब्राउज़र का उपयोग करें।";
+            statusElement.innerText = "आपका ब्राउज़र वॉइस सपोर्ट नहीं करता। Chrome का उपयोग करें।";
             statusElement.style.color = "red";
-            startBtn.style.display = 'none';
+            micBtn.style.display = 'none';
         }
 
-        // बटन दबाने पर माइक चालू करें
-        startBtn.addEventListener('click', () => {
-            if (recognition) {
+        // --- 3. माइक चालू/बंद करने का बटन ---
+        micBtn.addEventListener('click', () => {
+            if (!recognition) return;
+
+            if (!isListening) {
                 try {
                     recognition.start();
                 } catch (e) {
-                    console.log("रिकग्निशन पहले से चालू है");
+                    console.log("पहले से चालू है");
                 }
-            }
+            } else {
+                recognition.stop();
+                isListening = false; // मैन्युअली स्टॉप किया, तो onend में यह true नहीं रहेगा
+                micBtn.innerText = "🎤 सुनना शुरू करें";
+                micBtn.classList.remove('stop-mode');
+                statusElement.innerText = "माइक बंद है";
+                statusElement.style.color = "#666";
+                hideCaption();            }
         });
+
+        // --- 4. कैप्शन दिखाने और 2 सेकंड बाद छिपाने का फंक्शन ---
+        function showCaption(text) {
+            captionElement.innerText = "सुना: " + text;
+            captionElement.classList.add('visible');
+
+            // पुराना टाइमर क्लियर करें ताकि लगातार बोलने पर यह झपके नहीं
+            if (captionTimer) {
+                clearTimeout(captionTimer);
+            }
+
+            // 2 सेकंड (2000 ms) बाद छिपा दें
+            captionTimer = setTimeout(() => {
+                hideCaption();
+            }, 2000);
+        }
+
+        function hideCaption() {
+            captionElement.classList.remove('visible');
+        }
+
     </script>
 </body>
 </html>
