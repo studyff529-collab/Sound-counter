@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ram Jaap Counter</title>
+    <style>
+        /* पूरा बैकग्राउंड काला और बेसिक स्टाइल */
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden; /* स्क्रोलिंग रोकने के लिए */
+        }
+
+        /* ऊपर का हेडर सेक्शन */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ff9933; /* भगवा रंग */
+            letter-spacing: 1px;
+            text-align: left;
+            flex: 1;
+        }
+
+        /* रीसेट बटन का डिज़ाइन */
+        .reset-btn {
+            background-color: #222;
+            color: #ff9933;
+            border: 1px solid #ff9933;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            user-select: none; /* टेक्स्ट सिलेक्ट न हो */            -webkit-tap-highlight-color: transparent;
+        }
+
+        .reset-btn:active {
+            background-color: #ff9933;
+            color: black;
+            transform: scale(0.95);
+        }
+
+        /* बीच का काउंटर सेक्शन */
+        .counter-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* बड़ा सा काउंटर नंबर */
+        #counter {
+            font-size: 12rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+            transition: transform 0.1s ease;
+            line-height: 1;
+        }
+
+        #status {
+            color: #888;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+
+        /* माइक चालू करने का बटन */
+        #startBtn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background-color: #ff9933;
+            color: black;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 153, 51, 0.3);
+            transition: transform 0.1s;
+        }
+        #startBtn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ऊपर का हिस्सा -->
+    <div class="header">
+        <div class="title">राम राम राम राम राम</div>
+        <button id="resetBtn" class="reset-btn">Reset</button>
+    </div>
+
+    <!-- बीच का काउंटर हिस्सा -->
+    <div class="counter-container">
+        <div id="counter">0</div>
+        <div id="status">माइक चालू करने के लिए नीचे बटन दबाएं</div>
+        <button id="startBtn">🎤 सुनना शुरू करें</button>
+    </div>
+
+    <!-- JavaScript लॉजिक -->
+    <script>
+        let count = 0;
+        const counterElement = document.getElementById('counter');
+        const resetBtn = document.getElementById('resetBtn');
+        const startBtn = document.getElementById('startBtn');
+        const statusElement = document.getElementById('status');
+
+        // --- 1. रीसेट बटन: 3 बार लगातार टैप करने का लॉजिक ---
+        let tapCount = 0;
+        let lastTapTime = 0;
+        const tapDelay = 800; // 0.8 सेकंड के अंदर 3 बार टैप करना होगा
+
+        resetBtn.addEventListener('click', (e) => {
+            // डबल टैप ज़ूम को रोकने के लिए
+            e.preventDefault(); 
+            
+            const currentTime = new Date().getTime();
+            
+            if (currentTime - lastTapTime < tapDelay) {
+                tapCount++;
+            } else {
+                tapCount = 1; // नई शुरुआत
+            }
+            lastTapTime = currentTime;
+
+            if (tapCount === 3) {
+                count = 0;
+                counterElement.innerText = count;
+                tapCount = 0; // टैप काउंट रीसेट करें                
+                // यूजर को विजुअल फीडबैक दें
+                resetBtn.innerText = "✓ रीसेट";
+                resetBtn.style.backgroundColor = "#ff9933";
+                resetBtn.style.color = "black";
+                
+                setTimeout(() => {
+                    resetBtn.innerText = "Reset";
+                    resetBtn.style.backgroundColor = "#222";
+                    resetBtn.style.color = "#ff9933";
+                }, 600);
+            }
+        });
+
+        // --- 2. वॉइस रिकग्निशन (आवाज़ सुनने) का लॉजिक ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN'; // हिंदी भाषा
+            recognition.continuous = true; // लगातार सुनता रहे
+            recognition.interimResults = false; // केवल अंतिम परिणाम दिखाए
+
+            recognition.onstart = () => {
+                statusElement.innerText = "सुन रहा हूँ... ('राम' बोलें)";
+                statusElement.style.color = "#00ff00"; // हरा रंग
+                startBtn.style.display = 'none';
+            };
+
+            recognition.onend = () => {
+                statusElement.innerText = "सुनना बंद हो गया। फिर से शुरू करें।";
+                statusElement.style.color = "#888";
+                startBtn.style.display = 'block';
+            };
+
+            recognition.onresult = (event) => {
+                const lastResultIndex = event.results.length - 1;
+                const transcript = event.results[lastResultIndex][0].transcript.trim().toLowerCase();
+                
+                // वाक्य को शब्दों में तोड़ें
+                const words = transcript.split(/\s+/);
+                let foundRam = false;
+
+                for (let word of words) {
+                    // विराम चिह्न (जैसे कॉमा, फुल स्टॉप) हटाएं
+                    const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+                    
+                    // चेक करें कि शब्द exact 'राम' या 'ram' है
+                    if (cleanWord === 'राम' || cleanWord === 'ram') {                        foundRam = true;
+                        break;
+                    }
+                }
+
+                // अगर सिर्फ 'राम' शब्द मिला, तो ही काउंट बढ़ेगा
+                if (foundRam) {
+                    count++;
+                    counterElement.innerText = count;
+                    
+                    // काउंटर बढ़ने पर थोड़ा सा एनिमेशन (पल्स इफेक्ट)
+                    counterElement.style.transform = "scale(1.15)";
+                    counterElement.style.color = "#ff9933";
+                    setTimeout(() => {
+                        counterElement.style.transform = "scale(1)";
+                        counterElement.style.color = "white";
+                    }, 150);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error", event.error);
+                if(event.error === 'not-allowed') {
+                    statusElement.innerText = "माइक की अनुमति नहीं दी गई।";
+                } else {
+                    statusElement.innerText = "Error: " + event.error;
+                }
+                statusElement.style.color = "red";
+            };
+        } else {
+            statusElement.innerText = "आपका ब्राउज़र वॉइस रिकग्निशन सपोर्ट नहीं करता। कृपया Chrome ब्राउज़र का उपयोग करें।";
+            statusElement.style.color = "red";
+            startBtn.style.display = 'none';
+        }
+
+        // बटन दबाने पर माइक चालू करें
+        startBtn.addEventListener('click', () => {
+            if (recognition) {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.log("रिकग्निशन पहले से चालू है");
+                }
+            }
+        });
+    </script>
+</body>
+</html>
