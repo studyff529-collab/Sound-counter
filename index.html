@@ -1,449 +1,257 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ram Jaap Counter</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #000000;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Top Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 15px;
-            border-bottom: 1px solid #222;
-        }
-
-        .ram-text {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #ff9933;
-            letter-spacing: 2px;
-            text-align: center;
-            flex: 1;
-        }
-
-        .reset-btn {
-            background-color: #1a1a1a;
-            color: #ff6666;
-            border: 2px solid #ff6666;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 1rem;            font-weight: bold;
-            cursor: pointer;
-            margin-left: 10px;
-            transition: all 0.2s;
-        }
-
-        .reset-btn:active {
-            background-color: #ff6666;
-            color: #000;
-            transform: scale(0.95);
-        }
-
-        /* Counter Display */
-        .counter-display {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 12rem;
-            font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-        }
-
-        /* Buttons Container */
-        .buttons-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-            padding: 20px;
-            position: relative;
-        }
-
-        /* Audio Visualizer (above Start button) */
-        .visualizer-container {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-140%);
-            width: 120px;
-            height: 40px;
-            display: none;
-        }
-
-        .visualizer-container.active {
-            display: block;
-        }
-
-        #visualizer {            width: 100%;
-            height: 100%;
-        }
-
-        /* Start and Stop Buttons */
-        .control-btn {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border: 3px solid;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .start-btn {
-            background-color: #1a1a1a;
-            color: #4CAF50;
-            border-color: #4CAF50;
-        }
-
-        .start-btn.active {
-            background-color: #4CAF50;
-            color: #000;
-            box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
-            transform: scale(1.05);
-        }
-
-        .stop-btn {
-            background-color: #1a1a1a;
-            color: #f44336;
-            border-color: #f44336;
-        }
-
-        .stop-btn.active {
-            background-color: #f44336;
-            color: #fff;
-            box-shadow: 0 0 30px rgba(244, 67, 54, 0.6);
-            transform: scale(1.05);
-        }
-
-        .control-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Caption Area */
-        .caption-container {
-            padding: 20px;            text-align: center;
-            min-height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .caption-line {
-            font-size: 1.3rem;
-            color: #888;
-            border-bottom: 2px solid #333;
-            padding: 10px 20px;
-            min-width: 200px;
-            text-align: center;
-            transition: opacity 0.3s;
-        }
-
-        .caption-line.show {
-            color: #fff;
-            border-bottom-color: #ff9933;
-            opacity: 1;
-        }
-
-        .caption-line.hide {
-            opacity: 0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice Search</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  .search-bar {
+    width: 90%;
+    max-width: 500px;
+    margin-top: 40px;
+    padding: 15px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px;
+    outline: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  .mic-btn {
+    margin-top: 150px;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: none;
+    background: #fff;
+    color: #764ba2;
+    font-size: 40px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+  }
+  .mic-btn:active { transform: scale(0.95); }
+  .mic-btn.listening {
+    background: #ff4757;
+    color: #fff;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.7); }
+    50% { box-shadow: 0 0 0 20px rgba(255,71,87,0); }
+  }  .count-display {
+    margin-top: 25px;
+    color: #fff;
+    font-size: 26px;
+    font-weight: bold;
+    background: rgba(255,255,255,0.2);
+    padding: 12px 35px;
+    border-radius: 15px;
+    text-align: center;
+  }
+  .status {
+    margin-top: 15px;
+    color: #fff;
+    font-size: 15px;
+    text-align: center;
+  }
+  .reset-btn {
+    margin-top: 30px;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .reset-btn:hover {
+    background: rgba(255,255,255,0.3);
+  }
+  .reset-btn.blink {
+    animation: blink 0.3s;
+  }
+  @keyframes blink {
+    0%, 100% { background: rgba(255,255,255,0.2); }
+    50% { background: rgba(255,255,255,0.8); color: #764ba2; }
+  }
+</style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="ram-text">राम राम राम राम राम</div>
-        <button class="reset-btn" id="resetBtn">Reset</button>
-    </div>
 
-    <!-- Counter -->
-    <div class="counter-display" id="counter">0</div>
+  <input type="text" class="search-bar" id="searchBar" placeholder="Yahan text aayega...">
 
-    <!-- Buttons with Visualizer -->
-    <div class="buttons-container">
-        <div class="visualizer-container" id="visualizerContainer">
-            <canvas id="visualizer"></canvas>
-        </div>
-        <button class="control-btn start-btn" id="startBtn">Start</button>
-        <button class="control-btn stop-btn" id="stopBtn">Stop</button>
-    </div>
+  <button class="mic-btn" id="micBtn">🎤</button>
+  
+  <div class="count-display">
+    राम Count: <span id="count">0</span>
+  </div>
+    <p class="status" id="status">Button dabao aur bolo</p>
+  
+  <button class="reset-btn" id="resetBtn">Reset Count</button>
 
-    <!-- Caption -->
-    <div class="caption-container">
-        <div class="caption-line" id="caption">caption text</div>    </div>
+<script>
+  const btn = document.getElementById('micBtn');
+  const searchBar = document.getElementById('searchBar');
+  const status = document.getElementById('status');
+  const countDisplay = document.getElementById('count');
+  const resetBtn = document.getElementById('resetBtn');
 
-    <script>
-        // Variables
-        let count = 0;
-        let isListening = false;
-        let recognition = null;
-        let audioContext = null;
-        let analyser = null;
-        let microphone = null;
-        let animationId = null;
-        let captionTimer = null;
-        let partialRam = ''; // To track "रा" or "म" separately
+  let count = 0;
+  let lastCountedText = '';
+  let isListening = false;
+  let processedResultIndex = 0; // Track ki kaunse results process ho chuke hain
 
-        // DOM Elements
-        const counterEl = document.getElementById('counter');
-        const resetBtn = document.getElementById('resetBtn');
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const captionEl = document.getElementById('caption');
-        const visualizerContainer = document.getElementById('visualizerContainer');
-        const canvas = document.getElementById('visualizer');
-        const canvasCtx = canvas.getContext('2d');
+  // Function: text mein ram/राम count karo
+  function countRam(text) {
+    const matches = text.match(/ram|राम/gi);
+    return matches ? matches.length : 0;
+  }
 
-        // Set canvas size
-        canvas.width = 120;
-        canvas.height = 40;
+  // Typing se count karo
+  searchBar.addEventListener('input', () => {
+    const currentText = searchBar.value;
+    if (currentText.length > lastCountedText.length) {
+      const newText = currentText.substring(lastCountedText.length);
+      const newCount = countRam(newText);
+      if (newCount > 0) {
+        count += newCount;
+        countDisplay.textContent = count;
+      }
+    }
+    lastCountedText = currentText;
+  });
 
-        // Reset Button with Vibration
-        resetBtn.addEventListener('click', () => {
-            // Vibrate phone (50ms)
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
-            
-            // Reset counter
-            count = 0;
-            counterEl.textContent = '0';
-            
-            // Visual feedback
-            counterEl.style.color = '#ff6666';
-            setTimeout(() => {
-                counterEl.style.color = '#ffffff';
-            }, 200);
-        });
+  // Reset button - triple click
+  let clickTimes = [];
+  resetBtn.addEventListener('click', () => {
+    resetBtn.classList.add('blink');
+    setTimeout(() => resetBtn.classList.remove('blink'), 300);
+    
+    const now = Date.now();
+    clickTimes.push(now);
+    
+    if (clickTimes.length > 3) {
+      clickTimes.shift();
+    }
+    
+    if (clickTimes.length === 3) {      const timeDiff = clickTimes[2] - clickTimes[0];
+      if (timeDiff <= 1000) {
+        count = 0;
+        countDisplay.textContent = '0';
+        status.textContent = "✅ Count reset ho gaya!";
+        clickTimes = [];
+      }
+    }
+  });
 
-        // Speech Recognition Setup
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    status.textContent = "Tere browser mein voice support nahi hai";
+    btn.disabled = true;
+  } else {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'hi-IN';
+    recognition.continuous = true;
+    recognition.interimResults = false; // Sirf final results - duplicates nahi aayenge
+
+    btn.addEventListener('click', () => {
+      if (isListening) {
+        recognition.stop();
+        isListening = false;
+        btn.classList.remove('listening');
+        status.textContent = "Mic band. Start karne ke liye dobara dabao";
+      } else {
+        try {
+          recognition.start();
+          isListening = true;
+          processedResultIndex = 0; // Reset on start
+          btn.classList.add('listening');
+          status.textContent = "🎧 Sun raha hoon... (band karne ke liye dobara dabao)";
+        } catch(e) {
+          status.textContent = "Error: " + e.message;
+        }
+      }
+    });
+
+    recognition.onresult = (event) => {
+      let finalText = '';
+      
+      // Sirf naye results process karo (jo pehle process nahi hue)
+      for (let i = processedResultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          const transcript = event.results[i][0].transcript.trim();
+          if (transcript) {
+            finalText += transcript + ' ';
+          }        }
+      }
+      
+      // Update processed index
+      processedResultIndex = event.results.length;
+      
+      // Search bar mein add karo (purane text ke saath)
+      if (finalText) {
+        searchBar.value = searchBar.value ? searchBar.value + ' ' + finalText.trim() : finalText.trim();
         
-        if (SpeechRecognition) {            recognition = new SpeechRecognition();
-            recognition.lang = 'hi-IN';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            recognition.onresult = (event) => {
-                let finalTranscript = '';
-                let interimTranscript = '';
-
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript.toLowerCase().trim();
-                    
-                    if (event.results[i].isFinal) {
-                        finalTranscript += transcript;
-                    } else {
-                        interimTranscript += transcript;
-                    }
-                }
-
-                const displayText = finalTranscript || interimTranscript;
-                
-                // Show caption
-                if (displayText) {
-                    showCaption(displayText);
-                }
-
-                // Count "राम" or "ram" - including split words
-                if (finalTranscript) {
-                    countRamWords(finalTranscript);
-                }
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-            };
+        // Count karo naye text mein
+        if (searchBar.value.length > lastCountedText.length) {
+          const newText = searchBar.value.substring(lastCountedText.length);
+          const newCount = countRam(newText);
+          if (newCount > 0) {
+            count += newCount;
+            countDisplay.textContent = count;
+          }
+          lastCountedText = searchBar.value;
         }
+      }
+    };
 
-        // Count Ram words (including split "रा" and "म")
-        function countRamWords(text) {
-            const lowerText = text.toLowerCase();
-            
-            // Check for complete "राम" or "ram"
-            const completeMatches = lowerText.match(/राम|ram/g);
-            if (completeMatches) {
-                count += completeMatches.length;
-            }
-            
-            // Check for split "रा" and "म"
-            // If text contains "रा" or "म" separately
-            const raMatches = lowerText.match(/रा\b|\bra/g);            const mMatches = lowerText.match(/\bम\b|[^ा]म\b/g);
-            
-            // Track partial matches across multiple utterances
-            if (raMatches && raMatches.length > 0) {
-                partialRam = 'ra';
-            }
-            if (mMatches && mMatches.length > 0 && partialRam === 'ra') {
-                count += mMatches.length;
-                partialRam = '';
-            } else if (mMatches && mMatches.length > 0) {
-                partialRam = 'm';
-            }
-            
-            // Update counter
-            counterEl.textContent = count;
-            
-            // Pulse animation
-            counterEl.style.transform = 'scale(1.1)';
-            counterEl.style.color = '#ff9933';
-            setTimeout(() => {
-                counterEl.style.transform = 'scale(1)';
-                counterEl.style.color = '#ffffff';
-            }, 150);
+    recognition.onend = () => {
+      if (isListening) {
+        try {
+          recognition.start();
+        } catch(e) {}
+      } else {
+        btn.classList.remove('listening');
+      }
+    };
+
+    recognition.onerror = (e) => {
+      if (e.error === 'no-speech' || e.error === 'aborted') {
+        // Ignore
+      } else {
+        status.textContent = "Error: " + e.error;
+      }
+    };
+  }
+
+  // Har 5 second mein search bar auto-clear
+  setInterval(() => {
+    if (searchBar.value.trim()) {
+      if (searchBar.value.length > lastCountedText.length) {
+        const newText = searchBar.value.substring(lastCountedText.length);
+        const newCount = countRam(newText);
+        if (newCount > 0) {
+          count += newCount;          countDisplay.textContent = count;
         }
+      }
+    }
+    searchBar.value = '';
+    lastCountedText = '';
+    processedResultIndex = 0; // Reset on clear
+  }, 5000);
+</script>
 
-        // Show Caption for 2 seconds
-        function showCaption(text) {
-            captionEl.textContent = text;
-            captionEl.classList.remove('hide');
-            captionEl.classList.add('show');
-            
-            // Clear existing timer
-            if (captionTimer) {
-                clearTimeout(captionTimer);
-            }
-            
-            // Hide after 2 seconds
-            captionTimer = setTimeout(() => {
-                captionEl.classList.remove('show');
-                captionEl.classList.add('hide');
-            }, 2000);
-        }
-
-        // Audio Visualizer Setup
-        async function setupAudioVisualizer() {
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                analyser.fftSize = 64;
-                                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                microphone = audioContext.createMediaStreamSource(stream);
-                microphone.connect(analyser);
-                
-                visualize();
-            } catch (err) {
-                console.error('Error setting up audio visualizer:', err);
-            }
-        }
-
-        // Draw Visualizer
-        function visualize() {
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            
-            function draw() {
-                if (!isListening) return;
-                
-                animationId = requestAnimationFrame(draw);
-                
-                analyser.getByteFrequencyData(dataArray);
-                
-                canvasCtx.fillStyle = '#000';
-                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                const barWidth = (canvas.width / bufferLength) * 2.5;
-                let barHeight;
-                let x = 0;
-                
-                for (let i = 0; i < bufferLength; i++) {
-                    barHeight = (dataArray[i] / 255) * canvas.height;
-                    
-                    // Gradient color based on height
-                    const gradient = canvasCtx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-                    gradient.addColorStop(0, '#4CAF50');
-                    gradient.addColorStop(1, '#8BC34A');
-                    
-                    canvasCtx.fillStyle = gradient;
-                    canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                    
-                    x += barWidth + 1;
-                }
-            }
-            
-            draw();
-        }
-
-        // Start Button
-        startBtn.addEventListener('click', async () => {
-            if (isListening) return;            
-            isListening = true;
-            
-            // Update button states
-            startBtn.classList.add('active');
-            stopBtn.classList.remove('active');
-            visualizerContainer.classList.add('active');
-            
-            // Start speech recognition
-            if (recognition) {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    console.log('Recognition already started');
-                }
-            }
-            
-            // Start audio visualizer
-            await setupAudioVisualizer();
-        });
-
-        // Stop Button
-        stopBtn.addEventListener('click', () => {
-            if (!isListening) return;
-            
-            isListening = false;
-            
-            // Update button states
-            stopBtn.classList.add('active');
-            startBtn.classList.remove('active');
-            visualizerContainer.classList.remove('active');
-            
-            // Stop speech recognition
-            if (recognition) {
-                recognition.stop();
-            }
-            
-            // Stop audio visualizer
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
-            if (audioContext) {
-                audioContext.close();
-                audioContext = null;
-            }
-            
-            // Clear canvas
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-        });
-        // Initialize caption as hidden
-        setTimeout(() => {
-            captionEl.classList.add('hide');
-        }, 100);
-    </script>
 </body>
-</html></body>
 </html>
