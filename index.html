@@ -110,15 +110,13 @@
   let count = 0;
   let lastCountedText = '';
   let isListening = false;
-  let processedResultIndex = 0; // Track ki kaunse results process ho chuke hain
+  let processedResultIndex = 0;
 
-  // Function: text mein ram/राम count karo
   function countRam(text) {
     const matches = text.match(/ram|राम/gi);
     return matches ? matches.length : 0;
   }
 
-  // Typing se count karo
   searchBar.addEventListener('input', () => {
     const currentText = searchBar.value;
     if (currentText.length > lastCountedText.length) {
@@ -132,7 +130,6 @@
     lastCountedText = currentText;
   });
 
-  // Reset button - triple click
   let clickTimes = [];
   resetBtn.addEventListener('click', () => {
     resetBtn.classList.add('blink');
@@ -145,10 +142,10 @@
       clickTimes.shift();
     }
     
-    if (clickTimes.length === 3) {      const timeDiff = clickTimes[2] - clickTimes[0];
+    if (clickTimes.length === 3) {
+      const timeDiff = clickTimes[2] - clickTimes[0];
       if (timeDiff <= 1000) {
-        count = 0;
-        countDisplay.textContent = '0';
+        count = 0;        countDisplay.textContent = '0';
         status.textContent = "✅ Count reset ho gaya!";
         clickTimes = [];
       }
@@ -164,21 +161,16 @@
     const recognition = new SpeechRecognition();
     recognition.lang = 'hi-IN';
     recognition.continuous = true;
-    recognition.interimResults = false; // Sirf final results - duplicates nahi aayenge
+    recognition.interimResults = false;
 
     btn.addEventListener('click', () => {
-      if (isListening) {
-        recognition.stop();
-        isListening = false;
-        btn.classList.remove('listening');
-        status.textContent = "Mic band. Start karne ke liye dobara dabao";
-      } else {
+      if (!isListening) {
         try {
           recognition.start();
           isListening = true;
-          processedResultIndex = 0; // Reset on start
+          processedResultIndex = 0;
           btn.classList.add('listening');
-          status.textContent = "🎧 Sun raha hoon... (band karne ke liye dobara dabao)";
+          status.textContent = "🎧 Sun raha hoon... bol";
         } catch(e) {
           status.textContent = "Error: " + e.message;
         }
@@ -188,25 +180,21 @@
     recognition.onresult = (event) => {
       let finalText = '';
       
-      // Sirf naye results process karo (jo pehle process nahi hue)
       for (let i = processedResultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
           const transcript = event.results[i][0].transcript.trim();
           if (transcript) {
             finalText += transcript + ' ';
-          }        }
+          }
+        }
       }
       
-      // Update processed index
       processedResultIndex = event.results.length;
       
-      // Search bar mein add karo (purane text ke saath)
       if (finalText) {
         searchBar.value = searchBar.value ? searchBar.value + ' ' + finalText.trim() : finalText.trim();
         
-        // Count karo naye text mein
-        if (searchBar.value.length > lastCountedText.length) {
-          const newText = searchBar.value.substring(lastCountedText.length);
+        if (searchBar.value.length > lastCountedText.length) {          const newText = searchBar.value.substring(lastCountedText.length);
           const newCount = countRam(newText);
           if (newCount > 0) {
             count += newCount;
@@ -222,8 +210,6 @@
         try {
           recognition.start();
         } catch(e) {}
-      } else {
-        btn.classList.remove('listening');
       }
     };
 
@@ -236,22 +222,23 @@
     };
   }
 
-  // Har 5 second mein search bar auto-clear
   setInterval(() => {
     if (searchBar.value.trim()) {
       if (searchBar.value.length > lastCountedText.length) {
         const newText = searchBar.value.substring(lastCountedText.length);
         const newCount = countRam(newText);
         if (newCount > 0) {
-          count += newCount;          countDisplay.textContent = count;
+          count += newCount;
+          countDisplay.textContent = count;
         }
       }
     }
     searchBar.value = '';
     lastCountedText = '';
-    processedResultIndex = 0; // Reset on clear
+    processedResultIndex = 0;
   }, 5000);
 </script>
 
 </body>
+</html></body>
 </html>
